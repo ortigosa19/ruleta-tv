@@ -1,0 +1,2376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La Ruleta de la Suerte</title>
+<style>
+:root{--bg:#071426;--panel:#102541;--blue:#0879c9;--gold:#ffd34d;--tile:#f7f8fb;--ink:#10213b;--green:#18b86a;--red:#e83d55}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#143b66 0,#071426 65%);color:#fff;font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:#06101edb;border-bottom:2px solid #f7c948;gap:12px;flex-wrap:wrap}
+h1{margin:0;font-size:clamp(20px,3vw,34px);letter-spacing:1px;color:var(--gold);text-shadow:0 2px 12px #000}
+.header-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.volume-control{display:flex;align-items:center;gap:7px;background:#102541;border:1px solid #315477;border-radius:8px;padding:7px 10px;font-size:13px;font-weight:700}.volume-control input{width:105px;accent-color:#ffd34d;cursor:pointer}.volume-control output{min-width:34px;text-align:right;color:var(--gold)}
+button,input,select,textarea{font:inherit}button{border:0;border-radius:8px;padding:10px 13px;cursor:pointer;font-weight:700;background:#e7eef8;color:#12223a;transition:transform .1s,filter .1s}button:hover{filter:brightness(1.08)}button:active{transform:scale(.98)}button.primary{background:var(--gold)}button.blue{background:#1686d8;color:#fff}button.green{background:var(--green);color:#062718}button.danger{background:var(--red);color:#fff}button.dark{background:#203b5e;color:#fff}button.small{padding:6px 9px;font-size:13px}
+main{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(300px,1fr);gap:16px;padding:16px;max-width:1600px;margin:auto}
+.panel{background:linear-gradient(145deg,#122b49,#0c1d33);border:1px solid #315477;border-radius:14px;padding:15px;box-shadow:0 10px 28px #0004;min-width:0}
+.panel h2{margin:0 0 12px;color:var(--gold);font-size:19px}
+.board-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}.category{color:#b9d7f4;font-weight:bold;text-transform:uppercase;letter-spacing:2px}
+.puzzle{display:flex;flex-direction:column;gap:9px;align-items:stretch;justify-content:center;min-height:230px;padding:15px;background:#061323;border:2px solid #4b83b2;border-radius:10px;width:100%;max-width:100%;min-width:0;overflow:hidden;box-sizing:border-box}
+.puzzle-inner{display:flex;flex-wrap:wrap;gap:3px;width:100%;max-width:100%;min-width:0;align-content:center;align-items:flex-start;box-sizing:border-box;overflow:visible;background:#24364b}.word-group{display:inline-flex;gap:3px;flex:0 0 auto;max-width:100%;min-width:0;white-space:nowrap}.tile{width:var(--tile-width, calc(100% / 13));flex:0 0 var(--tile-width, calc(100% / 13));height:clamp(30px,4vw,58px);min-width:0;display:flex;align-items:center;justify-content:center;background:#f7f8fb;color:var(--ink);border:2px solid #10213b;border-radius:3px;font-size:clamp(10px,1.5vw,22px);font-weight:900;line-height:1;text-transform:uppercase;box-shadow:none;margin:0;box-sizing:border-box;overflow:visible;white-space:nowrap;text-overflow:clip;padding:0;letter-spacing:0;flex-shrink:1}
+.tile.hidden{color:transparent;background:#ffffff;border-color:#10213b;box-shadow:none}.tile.hidden-target-solved{background:#18b86a!important;border-color:#18b86a!important;color:#fff!important}.tile.space{background:linear-gradient(145deg,#0797e5,#0879c9);border-color:#10213b;box-shadow:none;color:transparent}
+.puzzle-message{min-height:24px;text-align:center;color:#ffe48a;font-weight:bold;margin-top:10px}
+.players{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:14px}
+.player{background:#0a1a2d;border:2px solid #2e4b6a;border-radius:10px;padding:10px;text-align:center;min-width:0}.player.active{border-color:var(--gold);box-shadow:0 0 0 2px #ffd34d2b}.player input{width:100%;min-width:0;background:#183454;color:#fff;border:1px solid #426587;border-radius:5px;padding:6px;text-align:center;font-weight:bold}.score{font-size:clamp(22px,3vw,32px);font-weight:900;color:var(--gold);margin:7px 0}.player-buttons{display:flex;justify-content:center;gap:4px;flex-wrap:wrap}
+.rightcol{display:flex;flex-direction:column;gap:16px}.wheel-area{display:grid;grid-template-columns:minmax(180px,1fr) minmax(100px,.7fr);gap:12px;align-items:center}
+canvas{width:100%;max-width:330px;aspect-ratio:1;display:block;margin:auto;filter:drop-shadow(0 5px 8px #0006)}.wheel-controls{display:flex;flex-direction:column;gap:8px}.wheel-result{font-size:20px;color:var(--gold);font-weight:900;text-align:center;min-height:26px}
+.control-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px}.letter{padding:8px 0;min-width:0;border-radius:5px;font-size:15px}.letter.used{background:#52647a;color:#aab7c7;text-decoration:line-through;cursor:not-allowed}.letter.vowel{background:#ffd34d}.letter:disabled{opacity:.4}
+.form-row{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}.form-row input,.form-row select,.form-row textarea{flex:1;min-width:100px;padding:9px;border-radius:7px;border:1px solid #426587;background:#07182b;color:#fff}
+textarea{width:100%;min-height:70px;resize:vertical}.phrase-list{display:flex;flex-direction:column;gap:6px;max-height:170px;overflow:auto}.phrase-item{display:flex;gap:7px;align-items:center;justify-content:space-between;background:#091a2c;padding:8px;border-radius:7px}.phrase-item span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;font-size:13px}
+.status{font-size:13px;color:#b9d7f4}.concealed{display:none!important}.footer-note{text-align:center;color:#94b1d0;font-size:12px;padding:0 10px 15px}
+dialog{background:#102541;color:#fff;border:1px solid #54799e;border-radius:12px;max-width:550px;width:calc(100% - 24px)}dialog::backdrop{background:#000b}dialog h2{color:var(--gold)}.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}
+@media(max-width:950px){main{grid-template-columns:1fr}.wheel-area{grid-template-columns:minmax(170px,1fr) minmax(120px,.8fr)}}
+@media(max-width:520px){main{padding:8px;gap:8px}.panel{padding:10px}.players{gap:4px}.player{padding:6px}.control-grid{grid-template-columns:repeat(6,minmax(0,1fr))}.wheel-area{grid-template-columns:1fr}.wheel-controls{display:grid;grid-template-columns:1fr 1fr}.wheel-result{grid-column:1/-1}.puzzle{padding:8px;overflow:hidden;align-items:stretch}.puzzle-inner{margin:0;width:100%;grid-template-columns:repeat(13,minmax(0,1fr));overflow:visible}.tile{height:clamp(26px,7vw,36px);font-size:clamp(8px,2vw,12px);border-width:1px;overflow:visible}}
+body.board-only main{grid-template-columns:1fr;max-width:1400px}body.board-only .rightcol{display:none}body.board-only header .header-actions .control-only{display:none}body.board-only .puzzle{min-height:42vh}
+@media(max-width:600px){.tile{font-size:clamp(8px,2vw,12px);height:clamp(26px,7vw,36px);border-width:1px;overflow:visible}}
+</style>
+</head>
+<body>
+<header>
+  <h1>★ LA RULETA DE LA SUERTE ★</h1>
+  <div class="header-actions">
+    <button class="primary" id="fullscreenBtn">⛶ Pantalla completa</button>
+    <button class="dark control-only" id="boardModeBtn">📺 Ver solo tablero</button>
+    <button class="green" id="hiddenLetterBtn">🟩 Letra oculta</button>
+    <button class="dark" id="finalBtn">🏆 Ir a la final</button>
+    <button class="dark" id="newGameBtn">＋ Nueva partida</button>
+    <button class="dark" id="helpBtn">Ayuda</button>
+    <label class="volume-control" for="volumeSlider">🔊 Volumen <input id="volumeSlider" type="range" min="0" max="100" value="80" aria-label="Volumen de los sonidos"><output id="volumeValue">80%</output></label>
+  </div>
+</header>
+<main>
+  <section class="panel">
+    <div class="board-head">
+      <div><div class="category" id="categoryLabel">CATEGORÍA</div><div class="status" id="roundLabel">Partida preparada</div></div>
+      <div class="form-row" style="margin:0"><button class="blue" id="revealBtn">Revelar solución</button></div>
+    </div>
+    <div class="puzzle" id="puzzle"><div class="puzzle-inner" id="puzzleInner"></div></div>
+    <div class="puzzle-message" id="message">Elige una frase y gira la ruleta para comenzar.</div>
+    <div id="finalTimer" class="puzzle-message" style="display:none;font-size:clamp(22px,3vw,32px);color:#ffd34d" aria-live="polite">⏱️ 60</div>
+    <div class="players" id="players"></div>
+    <div class="form-row" style="margin-top:12px">
+      <button class="primary" id="solveBtn">Resolver panel</button>
+      <button class="blue" id="nextTurnBtn">Siguiente jugador</button>
+      <button class="dark" id="resetLettersBtn">Reiniciar letras</button>
+    </div>
+  </section>
+  <aside class="rightcol">
+    <section class="panel">
+      <h2>🎡 Ruleta</h2>
+      <div class="wheel-area">
+        <canvas id="wheel" width="420" height="420"></canvas>
+        <div class="wheel-controls">
+          <button class="primary" id="spinBtn">GIRAR RULETA</button>
+          <div class="wheel-result" id="wheelResult">¡A jugar!</div>
+          <div class="status" id="turnStatus">Turno: Jugador 1</div>
+          <button class="blue" id="buyVowelBtn">Comprar vocal (700)</button>
+          <button class="dark" id="passBtn">Pasar turno</button>
+          <button class="green" id="loadRandomBtnTurn">Cargar frase aleatoria</button>
+          <button class="blue" id="wildcardBtn" hidden>Usar comodín y seguir jugando</button>
+          <button class="green" id="allVowelsBtn" hidden>Usar todas las vocales</button>
+        </div>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>🔤 Elegir letra</h2>
+      <div class="control-grid" id="letters"></div>
+      <div class="status" style="margin-top:8px">Las vocales cuestan 700 puntos. Las consonantes se prueban gratis después de girar la ruleta.</div>
+    </section>
+    <section class="panel">
+      <h2>🗂️ Frases guardadas</h2>
+      <div class="form-row"><input id="phraseText" placeholder="Escribe una frase o panel"><input id="phraseCategory" placeholder="Categoría" value="General"></div>
+      <div class="form-row"><button class="green" id="savePhraseBtn">Guardar frase</button><button class="blue" id="loadRandomBtn">Cargar frase aleatoria</button></div>
+      <div class="form-row"><button class="dark" id="togglePhrasesBtn" aria-expanded="false">👁 Ver frases guardadas</button></div>
+      <div class="phrase-list concealed" id="phraseList"></div>
+      <div class="status" style="margin-top:8px">Las frases guardadas permanecen ocultas hasta que pulses «Ver frases guardadas».</div>
+    </section>
+  </aside>
+</main>
+<div class="footer-note">Juego local para uso familiar o de entretenimiento. No está afiliado al programa de televisión.</div>
+<dialog id="solveDialog">
+  <h2>Resolver el panel</h2><p>Escribe la solución completa:</p><input id="solveInput" style="width:100%;padding:10px;border-radius:7px" autocomplete="off">
+  <div class="modal-actions"><button class="dark" id="cancelSolveBtn">Cancelar</button><button class="primary" id="confirmSolveBtn">Comprobar</button></div>
+</dialog>
+<dialog id="helpDialog">
+  <h2>Cómo jugar</h2>
+  <ol><li>En “Frases guardadas”, escribe una frase y su categoría y pulsa Guardar frase.</li><li>Pulsa “Cargar frase aleatoria” para iniciar el panel.</li><li>El jugador activo gira la ruleta. Si sale una cantidad, puede probar una consonante.</li><li>Si acierta, gana la cantidad multiplicada por las apariciones de esa letra. Si falla, pasa el turno.</li><li>Las vocales cuestan 700 puntos. “Bancarrota” deja a cero los puntos de la ronda actual.</li><li>Usa “Resolver panel” para comprobar una solución completa. Puedes usar “Pantalla completa” y “Ver solo tablero” para proyectar.</li></ol>
+  <p class="status">Consejo: guarda varias frases antes de empezar. Los datos se conservan en este navegador de Windows.</p>
+  <div class="modal-actions"><button class="primary" id="closeHelpBtn">Entendido</button></div>
+</dialog>
+<script>
+// Sonidos del juego generados en el navegador (sin archivos externos).
+let audioCtx=null;
+let soundVolume=0.8;
+function soundTone(freq=440,duration=0.12,type='sine',volume=0.06,delay=0){
+ try{
+  audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+  if(audioCtx.state==='suspended') audioCtx.resume();
+  const osc=audioCtx.createOscillator(),gain=audioCtx.createGain(),t=audioCtx.currentTime+delay;
+  osc.type=type;osc.frequency.setValueAtTime(freq,t);
+  gain.gain.setValueAtTime(0.0001,t);gain.gain.exponentialRampToValueAtTime(volume,t+0.012);
+  gain.gain.exponentialRampToValueAtTime(0.0001,t+duration);
+  osc.connect(gain);gain.connect(audioCtx.destination);osc.start(t);osc.stop(t+duration+0.02);
+ }catch(e){}
+}
+function soundSpin(){soundTone(180,0.22,'sawtooth',0.025);soundTone(240,0.22,'sawtooth',0.02,0.22);soundTone(300,0.22,'sawtooth',0.018,0.44);}
+function soundWheelStop(){soundTone(520,0.1,'triangle',0.07);soundTone(760,0.16,'triangle',0.06,0.1);}
+function soundCorrect(){soundTone(660,0.12,'sine',0.07);soundTone(880,0.18,'sine',0.07,0.12);}
+function soundWrong(){soundTone(220,0.24,'triangle',0.07);soundTone(165,0.3,'triangle',0.06,0.18);}
+function soundWin(){[523,659,784,1047].forEach((f,i)=>soundTone(f,0.24,'triangle',0.065,i*0.14));}
+const $=id=>document.getElementById(id);
+const volumeSlider=$('volumeSlider'),volumeValue=$('volumeValue');
+try{const savedVolume=localStorage.getItem('ruletaSoundVolume');if(savedVolume!==null)volumeSlider.value=savedVolume;}catch(e){}
+function updateSoundVolume(){soundVolume=Number(volumeSlider.value)/100;volumeValue.textContent=volumeSlider.value+'%';try{localStorage.setItem('ruletaSoundVolume',volumeSlider.value);}catch(e){}}
+volumeSlider.addEventListener('input',updateSoundVolume);updateSoundVolume();
+const letters='ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('');
+const vowels='AEIOUÁÉÍÓÚÜ';
+const segments=[25,50,100,150,'PASAS A 0 PERO CONTINUAS','PIERDE TURNO',50,'BANCARROTA','PREMIO','COMODIN',25,150,100,50,'PASAS A 0 PERO CONTINUAS',100,250,200,150,'TODAS LAS VOCALES'];
+const colors=['#f4c542','#e74c3c','#2d9cdb','#27ae60','#9b59b6','#f39c12'];
+const defaultPhrases=[
+ {
+  "text": "EL SECRETO DE LA TORTILLA DE PATATAS ESTÁ EN LOS INGREDIENTES",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL SECRETO DE EL GAZPACHO ANDALUZ ESTÁ EN LOS INGREDIENTES",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL SECRETO DE LAS CROQUETAS CASERAS ESTÁ EN LOS INGREDIENTES",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL SECRETO DE EL PAN RECIÉN HECHO ESTÁ EN LOS INGREDIENTES",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL SECRETO DE LA PAELLA DEL DOMINGO ESTÁ EN LOS INGREDIENTES",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL SECRETO DE LA SOPA DE VERDURAS ESTÁ EN LOS INGREDIENTES",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL SECRETO DE EL PESCADO AL HORNO ESTÁ EN LOS INGREDIENTES",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL SECRETO DE LAS MIGAS TRADICIONALES ESTÁ EN LOS INGREDIENTES",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL SECRETO DE EL ARROZ CON LECHE ESTÁ EN LOS INGREDIENTES",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL SECRETO DE LA ENSALADA FRESCA ESTÁ EN LOS INGREDIENTES",
+  "category": "Cocina"
+ },
+ {
+  "text": "EN CASA PREPARAMOS LA TORTILLA DE PATATAS PARA TODA LA FAMILIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EN CASA PREPARAMOS EL GAZPACHO ANDALUZ PARA TODA LA FAMILIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EN CASA PREPARAMOS LAS CROQUETAS CASERAS PARA TODA LA FAMILIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EN CASA PREPARAMOS EL PAN RECIÉN HECHO PARA TODA LA FAMILIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EN CASA PREPARAMOS LA PAELLA DEL DOMINGO PARA TODA LA FAMILIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EN CASA PREPARAMOS LA SOPA DE VERDURAS PARA TODA LA FAMILIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EN CASA PREPARAMOS EL PESCADO AL HORNO PARA TODA LA FAMILIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EN CASA PREPARAMOS LAS MIGAS TRADICIONALES PARA TODA LA FAMILIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EN CASA PREPARAMOS EL ARROZ CON LECHE PARA TODA LA FAMILIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EN CASA PREPARAMOS LA ENSALADA FRESCA PARA TODA LA FAMILIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "UN BUEN COCINERO SABE PREPARAR LA TORTILLA DE PATATAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "UN BUEN COCINERO SABE PREPARAR EL GAZPACHO ANDALUZ",
+  "category": "Cocina"
+ },
+ {
+  "text": "UN BUEN COCINERO SABE PREPARAR LAS CROQUETAS CASERAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "UN BUEN COCINERO SABE PREPARAR EL PAN RECIÉN HECHO",
+  "category": "Cocina"
+ },
+ {
+  "text": "UN BUEN COCINERO SABE PREPARAR LA PAELLA DEL DOMINGO",
+  "category": "Cocina"
+ },
+ {
+  "text": "UN BUEN COCINERO SABE PREPARAR LA SOPA DE VERDURAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "UN BUEN COCINERO SABE PREPARAR EL PESCADO AL HORNO",
+  "category": "Cocina"
+ },
+ {
+  "text": "UN BUEN COCINERO SABE PREPARAR LAS MIGAS TRADICIONALES",
+  "category": "Cocina"
+ },
+ {
+  "text": "UN BUEN COCINERO SABE PREPARAR EL ARROZ CON LECHE",
+  "category": "Cocina"
+ },
+ {
+  "text": "UN BUEN COCINERO SABE PREPARAR LA ENSALADA FRESCA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL AROMA DE LA TORTILLA DE PATATAS LLENA TODA LA COCINA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL AROMA DE EL GAZPACHO ANDALUZ LLENA TODA LA COCINA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL AROMA DE LAS CROQUETAS CASERAS LLENA TODA LA COCINA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL AROMA DE EL PAN RECIÉN HECHO LLENA TODA LA COCINA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL AROMA DE LA PAELLA DEL DOMINGO LLENA TODA LA COCINA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL AROMA DE LA SOPA DE VERDURAS LLENA TODA LA COCINA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL AROMA DE EL PESCADO AL HORNO LLENA TODA LA COCINA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL AROMA DE LAS MIGAS TRADICIONALES LLENA TODA LA COCINA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL AROMA DE EL ARROZ CON LECHE LLENA TODA LA COCINA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL AROMA DE LA ENSALADA FRESCA LLENA TODA LA COCINA",
+  "category": "Cocina"
+ },
+ {
+  "text": "PARA HACER LA TORTILLA DE PATATAS HAY QUE TENER PACIENCIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "PARA HACER EL GAZPACHO ANDALUZ HAY QUE TENER PACIENCIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "PARA HACER LAS CROQUETAS CASERAS HAY QUE TENER PACIENCIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "PARA HACER EL PAN RECIÉN HECHO HAY QUE TENER PACIENCIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "PARA HACER LA PAELLA DEL DOMINGO HAY QUE TENER PACIENCIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "PARA HACER LA SOPA DE VERDURAS HAY QUE TENER PACIENCIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "PARA HACER EL PESCADO AL HORNO HAY QUE TENER PACIENCIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "PARA HACER LAS MIGAS TRADICIONALES HAY QUE TENER PACIENCIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "PARA HACER EL ARROZ CON LECHE HAY QUE TENER PACIENCIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "PARA HACER LA ENSALADA FRESCA HAY QUE TENER PACIENCIA",
+  "category": "Cocina"
+ },
+ {
+  "text": "CADA REGIÓN TIENE SU FORMA DE PREPARAR LA TORTILLA DE PATATAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "CADA REGIÓN TIENE SU FORMA DE PREPARAR EL GAZPACHO ANDALUZ",
+  "category": "Cocina"
+ },
+ {
+  "text": "CADA REGIÓN TIENE SU FORMA DE PREPARAR LAS CROQUETAS CASERAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "CADA REGIÓN TIENE SU FORMA DE PREPARAR EL PAN RECIÉN HECHO",
+  "category": "Cocina"
+ },
+ {
+  "text": "CADA REGIÓN TIENE SU FORMA DE PREPARAR LA PAELLA DEL DOMINGO",
+  "category": "Cocina"
+ },
+ {
+  "text": "CADA REGIÓN TIENE SU FORMA DE PREPARAR LA SOPA DE VERDURAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "CADA REGIÓN TIENE SU FORMA DE PREPARAR EL PESCADO AL HORNO",
+  "category": "Cocina"
+ },
+ {
+  "text": "CADA REGIÓN TIENE SU FORMA DE PREPARAR LAS MIGAS TRADICIONALES",
+  "category": "Cocina"
+ },
+ {
+  "text": "CADA REGIÓN TIENE SU FORMA DE PREPARAR EL ARROZ CON LECHE",
+  "category": "Cocina"
+ },
+ {
+  "text": "CADA REGIÓN TIENE SU FORMA DE PREPARAR LA ENSALADA FRESCA",
+  "category": "Cocina"
+ },
+ {
+  "text": "LO MEJOR DE LA TORTILLA DE PATATAS ES COMPARTIRLO EN LA MESA",
+  "category": "Cocina"
+ },
+ {
+  "text": "LO MEJOR DE EL GAZPACHO ANDALUZ ES COMPARTIRLO EN LA MESA",
+  "category": "Cocina"
+ },
+ {
+  "text": "LO MEJOR DE LAS CROQUETAS CASERAS ES COMPARTIRLO EN LA MESA",
+  "category": "Cocina"
+ },
+ {
+  "text": "LO MEJOR DE EL PAN RECIÉN HECHO ES COMPARTIRLO EN LA MESA",
+  "category": "Cocina"
+ },
+ {
+  "text": "LO MEJOR DE LA PAELLA DEL DOMINGO ES COMPARTIRLO EN LA MESA",
+  "category": "Cocina"
+ },
+ {
+  "text": "LO MEJOR DE LA SOPA DE VERDURAS ES COMPARTIRLO EN LA MESA",
+  "category": "Cocina"
+ },
+ {
+  "text": "LO MEJOR DE EL PESCADO AL HORNO ES COMPARTIRLO EN LA MESA",
+  "category": "Cocina"
+ },
+ {
+  "text": "LO MEJOR DE LAS MIGAS TRADICIONALES ES COMPARTIRLO EN LA MESA",
+  "category": "Cocina"
+ },
+ {
+  "text": "LO MEJOR DE EL ARROZ CON LECHE ES COMPARTIRLO EN LA MESA",
+  "category": "Cocina"
+ },
+ {
+  "text": "LO MEJOR DE LA ENSALADA FRESCA ES COMPARTIRLO EN LA MESA",
+  "category": "Cocina"
+ },
+ {
+  "text": "UNA PIZCA DE SAL MEJORA LA TORTILLA DE PATATAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "UNA PIZCA DE SAL MEJORA EL GAZPACHO ANDALUZ",
+  "category": "Cocina"
+ },
+ {
+  "text": "UNA PIZCA DE SAL MEJORA LAS CROQUETAS CASERAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "UNA PIZCA DE SAL MEJORA EL PAN RECIÉN HECHO",
+  "category": "Cocina"
+ },
+ {
+  "text": "UNA PIZCA DE SAL MEJORA LA PAELLA DEL DOMINGO",
+  "category": "Cocina"
+ },
+ {
+  "text": "UNA PIZCA DE SAL MEJORA LA SOPA DE VERDURAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "UNA PIZCA DE SAL MEJORA EL PESCADO AL HORNO",
+  "category": "Cocina"
+ },
+ {
+  "text": "UNA PIZCA DE SAL MEJORA LAS MIGAS TRADICIONALES",
+  "category": "Cocina"
+ },
+ {
+  "text": "UNA PIZCA DE SAL MEJORA EL ARROZ CON LECHE",
+  "category": "Cocina"
+ },
+ {
+  "text": "UNA PIZCA DE SAL MEJORA LA ENSALADA FRESCA",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL DOMINGO TOCA COCINAR LA TORTILLA DE PATATAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL DOMINGO TOCA COCINAR EL GAZPACHO ANDALUZ",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL DOMINGO TOCA COCINAR LAS CROQUETAS CASERAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL DOMINGO TOCA COCINAR EL PAN RECIÉN HECHO",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL DOMINGO TOCA COCINAR LA PAELLA DEL DOMINGO",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL DOMINGO TOCA COCINAR LA SOPA DE VERDURAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL DOMINGO TOCA COCINAR EL PESCADO AL HORNO",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL DOMINGO TOCA COCINAR LAS MIGAS TRADICIONALES",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL DOMINGO TOCA COCINAR EL ARROZ CON LECHE",
+  "category": "Cocina"
+ },
+ {
+  "text": "EL DOMINGO TOCA COCINAR LA ENSALADA FRESCA",
+  "category": "Cocina"
+ },
+ {
+  "text": "LOS MEJORES RECUERDOS EMPIEZAN CON LA TORTILLA DE PATATAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "LOS MEJORES RECUERDOS EMPIEZAN CON EL GAZPACHO ANDALUZ",
+  "category": "Cocina"
+ },
+ {
+  "text": "LOS MEJORES RECUERDOS EMPIEZAN CON LAS CROQUETAS CASERAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "LOS MEJORES RECUERDOS EMPIEZAN CON EL PAN RECIÉN HECHO",
+  "category": "Cocina"
+ },
+ {
+  "text": "LOS MEJORES RECUERDOS EMPIEZAN CON LA PAELLA DEL DOMINGO",
+  "category": "Cocina"
+ },
+ {
+  "text": "LOS MEJORES RECUERDOS EMPIEZAN CON LA SOPA DE VERDURAS",
+  "category": "Cocina"
+ },
+ {
+  "text": "LOS MEJORES RECUERDOS EMPIEZAN CON EL PESCADO AL HORNO",
+  "category": "Cocina"
+ },
+ {
+  "text": "LOS MEJORES RECUERDOS EMPIEZAN CON LAS MIGAS TRADICIONALES",
+  "category": "Cocina"
+ },
+ {
+  "text": "LOS MEJORES RECUERDOS EMPIEZAN CON EL ARROZ CON LECHE",
+  "category": "Cocina"
+ },
+ {
+  "text": "LOS MEJORES RECUERDOS EMPIEZAN CON LA ENSALADA FRESCA",
+  "category": "Cocina"
+ },
+ {
+  "text": "HAY QUE CUIDAR LOS BOSQUES DE PINOS TODOS LOS DÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "HAY QUE CUIDAR LAS MONTAÑAS NEVADAS TODOS LOS DÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "HAY QUE CUIDAR EL RÍO CRISTALINO TODOS LOS DÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "HAY QUE CUIDAR LAS FLORES SILVESTRES TODOS LOS DÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "HAY QUE CUIDAR LOS CAMPOS DE GIRASOLES TODOS LOS DÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "HAY QUE CUIDAR LA LLUVIA DE PRIMAVERA TODOS LOS DÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "HAY QUE CUIDAR EL CIELO ESTRELLADO TODOS LOS DÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "HAY QUE CUIDAR LAS PLAYAS TRANQUILAS TODOS LOS DÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "HAY QUE CUIDAR LOS PÁJAROS AL AMANECER TODOS LOS DÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "HAY QUE CUIDAR LOS SENDEROS DEL BOSQUE TODOS LOS DÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL VIENTO SUAVE RECORRE LOS BOSQUES DE PINOS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL VIENTO SUAVE RECORRE LAS MONTAÑAS NEVADAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL VIENTO SUAVE RECORRE EL RÍO CRISTALINO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL VIENTO SUAVE RECORRE LAS FLORES SILVESTRES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL VIENTO SUAVE RECORRE LOS CAMPOS DE GIRASOLES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL VIENTO SUAVE RECORRE LA LLUVIA DE PRIMAVERA",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL VIENTO SUAVE RECORRE EL CIELO ESTRELLADO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL VIENTO SUAVE RECORRE LAS PLAYAS TRANQUILAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL VIENTO SUAVE RECORRE LOS PÁJAROS AL AMANECER",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL VIENTO SUAVE RECORRE LOS SENDEROS DEL BOSQUE",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "AL AMANECER DESPIERTAN LOS BOSQUES DE PINOS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "AL AMANECER DESPIERTAN LAS MONTAÑAS NEVADAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "AL AMANECER DESPIERTAN EL RÍO CRISTALINO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "AL AMANECER DESPIERTAN LAS FLORES SILVESTRES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "AL AMANECER DESPIERTAN LOS CAMPOS DE GIRASOLES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "AL AMANECER DESPIERTAN LA LLUVIA DE PRIMAVERA",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "AL AMANECER DESPIERTAN EL CIELO ESTRELLADO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "AL AMANECER DESPIERTAN LAS PLAYAS TRANQUILAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "AL AMANECER DESPIERTAN LOS PÁJAROS AL AMANECER",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "AL AMANECER DESPIERTAN LOS SENDEROS DEL BOSQUE",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN PRIMAVERA FLORECEN LOS BOSQUES DE PINOS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN PRIMAVERA FLORECEN LAS MONTAÑAS NEVADAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN PRIMAVERA FLORECEN EL RÍO CRISTALINO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN PRIMAVERA FLORECEN LAS FLORES SILVESTRES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN PRIMAVERA FLORECEN LOS CAMPOS DE GIRASOLES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN PRIMAVERA FLORECEN LA LLUVIA DE PRIMAVERA",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN PRIMAVERA FLORECEN EL CIELO ESTRELLADO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN PRIMAVERA FLORECEN LAS PLAYAS TRANQUILAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN PRIMAVERA FLORECEN LOS PÁJAROS AL AMANECER",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN PRIMAVERA FLORECEN LOS SENDEROS DEL BOSQUE",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL PAISAJE CAMBIA ALREDEDOR DE LOS BOSQUES DE PINOS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL PAISAJE CAMBIA ALREDEDOR DE LAS MONTAÑAS NEVADAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL PAISAJE CAMBIA ALREDEDOR DE EL RÍO CRISTALINO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL PAISAJE CAMBIA ALREDEDOR DE LAS FLORES SILVESTRES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL PAISAJE CAMBIA ALREDEDOR DE LOS CAMPOS DE GIRASOLES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL PAISAJE CAMBIA ALREDEDOR DE LA LLUVIA DE PRIMAVERA",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL PAISAJE CAMBIA ALREDEDOR DE EL CIELO ESTRELLADO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL PAISAJE CAMBIA ALREDEDOR DE LAS PLAYAS TRANQUILAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL PAISAJE CAMBIA ALREDEDOR DE LOS PÁJAROS AL AMANECER",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL PAISAJE CAMBIA ALREDEDOR DE LOS SENDEROS DEL BOSQUE",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "UN PASEO POR LOS BOSQUES DE PINOS RENUEVA LAS ENERGÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "UN PASEO POR LAS MONTAÑAS NEVADAS RENUEVA LAS ENERGÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "UN PASEO POR EL RÍO CRISTALINO RENUEVA LAS ENERGÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "UN PASEO POR LAS FLORES SILVESTRES RENUEVA LAS ENERGÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "UN PASEO POR LOS CAMPOS DE GIRASOLES RENUEVA LAS ENERGÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "UN PASEO POR LA LLUVIA DE PRIMAVERA RENUEVA LAS ENERGÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "UN PASEO POR EL CIELO ESTRELLADO RENUEVA LAS ENERGÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "UN PASEO POR LAS PLAYAS TRANQUILAS RENUEVA LAS ENERGÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "UN PASEO POR LOS PÁJAROS AL AMANECER RENUEVA LAS ENERGÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "UN PASEO POR LOS SENDEROS DEL BOSQUE RENUEVA LAS ENERGÍAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "LA NATURALEZA NOS REGALA LOS BOSQUES DE PINOS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "LA NATURALEZA NOS REGALA LAS MONTAÑAS NEVADAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "LA NATURALEZA NOS REGALA EL RÍO CRISTALINO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "LA NATURALEZA NOS REGALA LAS FLORES SILVESTRES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "LA NATURALEZA NOS REGALA LOS CAMPOS DE GIRASOLES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "LA NATURALEZA NOS REGALA LA LLUVIA DE PRIMAVERA",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "LA NATURALEZA NOS REGALA EL CIELO ESTRELLADO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "LA NATURALEZA NOS REGALA LAS PLAYAS TRANQUILAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "LA NATURALEZA NOS REGALA LOS PÁJAROS AL AMANECER",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "LA NATURALEZA NOS REGALA LOS SENDEROS DEL BOSQUE",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL SILENCIO ACOMPAÑA A LOS BOSQUES DE PINOS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL SILENCIO ACOMPAÑA A LAS MONTAÑAS NEVADAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL SILENCIO ACOMPAÑA A EL RÍO CRISTALINO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL SILENCIO ACOMPAÑA A LAS FLORES SILVESTRES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL SILENCIO ACOMPAÑA A LOS CAMPOS DE GIRASOLES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL SILENCIO ACOMPAÑA A LA LLUVIA DE PRIMAVERA",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL SILENCIO ACOMPAÑA A EL CIELO ESTRELLADO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL SILENCIO ACOMPAÑA A LAS PLAYAS TRANQUILAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL SILENCIO ACOMPAÑA A LOS PÁJAROS AL AMANECER",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL SILENCIO ACOMPAÑA A LOS SENDEROS DEL BOSQUE",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "DESPUÉS DE LA LLUVIA BRILLAN LOS BOSQUES DE PINOS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "DESPUÉS DE LA LLUVIA BRILLAN LAS MONTAÑAS NEVADAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "DESPUÉS DE LA LLUVIA BRILLAN EL RÍO CRISTALINO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "DESPUÉS DE LA LLUVIA BRILLAN LAS FLORES SILVESTRES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "DESPUÉS DE LA LLUVIA BRILLAN LOS CAMPOS DE GIRASOLES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "DESPUÉS DE LA LLUVIA BRILLAN LA LLUVIA DE PRIMAVERA",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "DESPUÉS DE LA LLUVIA BRILLAN EL CIELO ESTRELLADO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "DESPUÉS DE LA LLUVIA BRILLAN LAS PLAYAS TRANQUILAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "DESPUÉS DE LA LLUVIA BRILLAN LOS PÁJAROS AL AMANECER",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "DESPUÉS DE LA LLUVIA BRILLAN LOS SENDEROS DEL BOSQUE",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN VERANO DISFRUTAMOS DE LOS BOSQUES DE PINOS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN VERANO DISFRUTAMOS DE LAS MONTAÑAS NEVADAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN VERANO DISFRUTAMOS DE EL RÍO CRISTALINO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN VERANO DISFRUTAMOS DE LAS FLORES SILVESTRES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN VERANO DISFRUTAMOS DE LOS CAMPOS DE GIRASOLES",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN VERANO DISFRUTAMOS DE LA LLUVIA DE PRIMAVERA",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN VERANO DISFRUTAMOS DE EL CIELO ESTRELLADO",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN VERANO DISFRUTAMOS DE LAS PLAYAS TRANQUILAS",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN VERANO DISFRUTAMOS DE LOS PÁJAROS AL AMANECER",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EN VERANO DISFRUTAMOS DE LOS SENDEROS DEL BOSQUE",
+  "category": "Naturaleza"
+ },
+ {
+  "text": "EL TRABAJO EN EQUIPO HACE GRANDE EL FÚTBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL TRABAJO EN EQUIPO HACE GRANDE EL BALONCESTO",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL TRABAJO EN EQUIPO HACE GRANDE EL CICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL TRABAJO EN EQUIPO HACE GRANDE LA NATACIÓN",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL TRABAJO EN EQUIPO HACE GRANDE EL ATLETISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL TRABAJO EN EQUIPO HACE GRANDE EL TENIS",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL TRABAJO EN EQUIPO HACE GRANDE EL SENDERISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL TRABAJO EN EQUIPO HACE GRANDE EL VOLEIBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL TRABAJO EN EQUIPO HACE GRANDE EL BALONMANO",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL TRABAJO EN EQUIPO HACE GRANDE EL MOTOCICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "PARA MEJORAR EN EL FÚTBOL HAY QUE ENTRENAR",
+  "category": "Deportes"
+ },
+ {
+  "text": "PARA MEJORAR EN EL BALONCESTO HAY QUE ENTRENAR",
+  "category": "Deportes"
+ },
+ {
+  "text": "PARA MEJORAR EN EL CICLISMO HAY QUE ENTRENAR",
+  "category": "Deportes"
+ },
+ {
+  "text": "PARA MEJORAR EN LA NATACIÓN HAY QUE ENTRENAR",
+  "category": "Deportes"
+ },
+ {
+  "text": "PARA MEJORAR EN EL ATLETISMO HAY QUE ENTRENAR",
+  "category": "Deportes"
+ },
+ {
+  "text": "PARA MEJORAR EN EL TENIS HAY QUE ENTRENAR",
+  "category": "Deportes"
+ },
+ {
+  "text": "PARA MEJORAR EN EL SENDERISMO HAY QUE ENTRENAR",
+  "category": "Deportes"
+ },
+ {
+  "text": "PARA MEJORAR EN EL VOLEIBOL HAY QUE ENTRENAR",
+  "category": "Deportes"
+ },
+ {
+  "text": "PARA MEJORAR EN EL BALONMANO HAY QUE ENTRENAR",
+  "category": "Deportes"
+ },
+ {
+  "text": "PARA MEJORAR EN EL MOTOCICLISMO HAY QUE ENTRENAR",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA AFICIÓN DISFRUTA DE EL FÚTBOL CADA FIN DE SEMANA",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA AFICIÓN DISFRUTA DE EL BALONCESTO CADA FIN DE SEMANA",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA AFICIÓN DISFRUTA DE EL CICLISMO CADA FIN DE SEMANA",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA AFICIÓN DISFRUTA DE LA NATACIÓN CADA FIN DE SEMANA",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA AFICIÓN DISFRUTA DE EL ATLETISMO CADA FIN DE SEMANA",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA AFICIÓN DISFRUTA DE EL TENIS CADA FIN DE SEMANA",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA AFICIÓN DISFRUTA DE EL SENDERISMO CADA FIN DE SEMANA",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA AFICIÓN DISFRUTA DE EL VOLEIBOL CADA FIN DE SEMANA",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA AFICIÓN DISFRUTA DE EL BALONMANO CADA FIN DE SEMANA",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA AFICIÓN DISFRUTA DE EL MOTOCICLISMO CADA FIN DE SEMANA",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA CONSTANCIA ES CLAVE PARA PRACTICAR EL FÚTBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA CONSTANCIA ES CLAVE PARA PRACTICAR EL BALONCESTO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA CONSTANCIA ES CLAVE PARA PRACTICAR EL CICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA CONSTANCIA ES CLAVE PARA PRACTICAR LA NATACIÓN",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA CONSTANCIA ES CLAVE PARA PRACTICAR EL ATLETISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA CONSTANCIA ES CLAVE PARA PRACTICAR EL TENIS",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA CONSTANCIA ES CLAVE PARA PRACTICAR EL SENDERISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA CONSTANCIA ES CLAVE PARA PRACTICAR EL VOLEIBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA CONSTANCIA ES CLAVE PARA PRACTICAR EL BALONMANO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA CONSTANCIA ES CLAVE PARA PRACTICAR EL MOTOCICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "UNA BUENA ESTRATEGIA PUEDE DECIDIR UNA COMPETICIÓN DE EL FÚTBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "UNA BUENA ESTRATEGIA PUEDE DECIDIR UNA COMPETICIÓN DE EL BALONCESTO",
+  "category": "Deportes"
+ },
+ {
+  "text": "UNA BUENA ESTRATEGIA PUEDE DECIDIR UNA COMPETICIÓN DE EL CICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "UNA BUENA ESTRATEGIA PUEDE DECIDIR UNA COMPETICIÓN DE LA NATACIÓN",
+  "category": "Deportes"
+ },
+ {
+  "text": "UNA BUENA ESTRATEGIA PUEDE DECIDIR UNA COMPETICIÓN DE EL ATLETISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "UNA BUENA ESTRATEGIA PUEDE DECIDIR UNA COMPETICIÓN DE EL TENIS",
+  "category": "Deportes"
+ },
+ {
+  "text": "UNA BUENA ESTRATEGIA PUEDE DECIDIR UNA COMPETICIÓN DE EL SENDERISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "UNA BUENA ESTRATEGIA PUEDE DECIDIR UNA COMPETICIÓN DE EL VOLEIBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "UNA BUENA ESTRATEGIA PUEDE DECIDIR UNA COMPETICIÓN DE EL BALONMANO",
+  "category": "Deportes"
+ },
+ {
+  "text": "UNA BUENA ESTRATEGIA PUEDE DECIDIR UNA COMPETICIÓN DE EL MOTOCICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL ESFUERZO DIARIO DA RESULTADOS EN EL FÚTBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL ESFUERZO DIARIO DA RESULTADOS EN EL BALONCESTO",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL ESFUERZO DIARIO DA RESULTADOS EN EL CICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL ESFUERZO DIARIO DA RESULTADOS EN LA NATACIÓN",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL ESFUERZO DIARIO DA RESULTADOS EN EL ATLETISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL ESFUERZO DIARIO DA RESULTADOS EN EL TENIS",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL ESFUERZO DIARIO DA RESULTADOS EN EL SENDERISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL ESFUERZO DIARIO DA RESULTADOS EN EL VOLEIBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL ESFUERZO DIARIO DA RESULTADOS EN EL BALONMANO",
+  "category": "Deportes"
+ },
+ {
+  "text": "EL ESFUERZO DIARIO DA RESULTADOS EN EL MOTOCICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LOS MEJORES MOMENTOS DE EL FÚTBOL SE VIVEN EN EQUIPO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LOS MEJORES MOMENTOS DE EL BALONCESTO SE VIVEN EN EQUIPO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LOS MEJORES MOMENTOS DE EL CICLISMO SE VIVEN EN EQUIPO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LOS MEJORES MOMENTOS DE LA NATACIÓN SE VIVEN EN EQUIPO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LOS MEJORES MOMENTOS DE EL ATLETISMO SE VIVEN EN EQUIPO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LOS MEJORES MOMENTOS DE EL TENIS SE VIVEN EN EQUIPO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LOS MEJORES MOMENTOS DE EL SENDERISMO SE VIVEN EN EQUIPO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LOS MEJORES MOMENTOS DE EL VOLEIBOL SE VIVEN EN EQUIPO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LOS MEJORES MOMENTOS DE EL BALONMANO SE VIVEN EN EQUIPO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LOS MEJORES MOMENTOS DE EL MOTOCICLISMO SE VIVEN EN EQUIPO",
+  "category": "Deportes"
+ },
+ {
+  "text": "RESPETAR AL RIVAL TAMBIÉN FORMA PARTE DE EL FÚTBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "RESPETAR AL RIVAL TAMBIÉN FORMA PARTE DE EL BALONCESTO",
+  "category": "Deportes"
+ },
+ {
+  "text": "RESPETAR AL RIVAL TAMBIÉN FORMA PARTE DE EL CICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "RESPETAR AL RIVAL TAMBIÉN FORMA PARTE DE LA NATACIÓN",
+  "category": "Deportes"
+ },
+ {
+  "text": "RESPETAR AL RIVAL TAMBIÉN FORMA PARTE DE EL ATLETISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "RESPETAR AL RIVAL TAMBIÉN FORMA PARTE DE EL TENIS",
+  "category": "Deportes"
+ },
+ {
+  "text": "RESPETAR AL RIVAL TAMBIÉN FORMA PARTE DE EL SENDERISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "RESPETAR AL RIVAL TAMBIÉN FORMA PARTE DE EL VOLEIBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "RESPETAR AL RIVAL TAMBIÉN FORMA PARTE DE EL BALONMANO",
+  "category": "Deportes"
+ },
+ {
+  "text": "RESPETAR AL RIVAL TAMBIÉN FORMA PARTE DE EL MOTOCICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA EMOCIÓN ACOMPAÑA SIEMPRE A EL FÚTBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA EMOCIÓN ACOMPAÑA SIEMPRE A EL BALONCESTO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA EMOCIÓN ACOMPAÑA SIEMPRE A EL CICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA EMOCIÓN ACOMPAÑA SIEMPRE A LA NATACIÓN",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA EMOCIÓN ACOMPAÑA SIEMPRE A EL ATLETISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA EMOCIÓN ACOMPAÑA SIEMPRE A EL TENIS",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA EMOCIÓN ACOMPAÑA SIEMPRE A EL SENDERISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA EMOCIÓN ACOMPAÑA SIEMPRE A EL VOLEIBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA EMOCIÓN ACOMPAÑA SIEMPRE A EL BALONMANO",
+  "category": "Deportes"
+ },
+ {
+  "text": "LA EMOCIÓN ACOMPAÑA SIEMPRE A EL MOTOCICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "DISFRUTAR ES LO MÁS IMPORTANTE EN EL FÚTBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "DISFRUTAR ES LO MÁS IMPORTANTE EN EL BALONCESTO",
+  "category": "Deportes"
+ },
+ {
+  "text": "DISFRUTAR ES LO MÁS IMPORTANTE EN EL CICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "DISFRUTAR ES LO MÁS IMPORTANTE EN LA NATACIÓN",
+  "category": "Deportes"
+ },
+ {
+  "text": "DISFRUTAR ES LO MÁS IMPORTANTE EN EL ATLETISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "DISFRUTAR ES LO MÁS IMPORTANTE EN EL TENIS",
+  "category": "Deportes"
+ },
+ {
+  "text": "DISFRUTAR ES LO MÁS IMPORTANTE EN EL SENDERISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "DISFRUTAR ES LO MÁS IMPORTANTE EN EL VOLEIBOL",
+  "category": "Deportes"
+ },
+ {
+  "text": "DISFRUTAR ES LO MÁS IMPORTANTE EN EL BALONMANO",
+  "category": "Deportes"
+ },
+ {
+  "text": "DISFRUTAR ES LO MÁS IMPORTANTE EN EL MOTOCICLISMO",
+  "category": "Deportes"
+ },
+ {
+  "text": "UN REFRÁN POPULAR RECUERDA QUE QUIEN MADRUGA APROVECHA MEJOR EL DÍA",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN REFRÁN POPULAR RECUERDA QUE LA UNIÓN HACE LA FUERZA",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN REFRÁN POPULAR RECUERDA QUE LA PACIENCIA TRAE BUENOS RESULTADOS",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN REFRÁN POPULAR RECUERDA QUE CADA ESFUERZO TIENE SU RECOMPENSA",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN REFRÁN POPULAR RECUERDA QUE ES MEJOR PREVENIR QUE LAMENTAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN REFRÁN POPULAR RECUERDA QUE LAS APARIENCIAS PUEDEN ENGAÑAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN REFRÁN POPULAR RECUERDA QUE NO TODO LO QUE BRILLA ES ORO",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN REFRÁN POPULAR RECUERDA QUE COMPARTIR ALEGRA EL CORAZÓN",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN REFRÁN POPULAR RECUERDA QUE LA EXPERIENCIA ENSEÑA A VIVIR",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN REFRÁN POPULAR RECUERDA QUE LAS BUENAS OBRAS HABLAN POR SÍ SOLAS",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA SABIDURÍA POPULAR ENSEÑA QUE QUIEN MADRUGA APROVECHA MEJOR EL DÍA",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA SABIDURÍA POPULAR ENSEÑA QUE LA UNIÓN HACE LA FUERZA",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA SABIDURÍA POPULAR ENSEÑA QUE LA PACIENCIA TRAE BUENOS RESULTADOS",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA SABIDURÍA POPULAR ENSEÑA QUE CADA ESFUERZO TIENE SU RECOMPENSA",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA SABIDURÍA POPULAR ENSEÑA QUE ES MEJOR PREVENIR QUE LAMENTAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA SABIDURÍA POPULAR ENSEÑA QUE LAS APARIENCIAS PUEDEN ENGAÑAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA SABIDURÍA POPULAR ENSEÑA QUE NO TODO LO QUE BRILLA ES ORO",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA SABIDURÍA POPULAR ENSEÑA QUE COMPARTIR ALEGRA EL CORAZÓN",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA SABIDURÍA POPULAR ENSEÑA QUE LA EXPERIENCIA ENSEÑA A VIVIR",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA SABIDURÍA POPULAR ENSEÑA QUE LAS BUENAS OBRAS HABLAN POR SÍ SOLAS",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUESTROS ABUELOS SOLÍAN DECIR QUE QUIEN MADRUGA APROVECHA MEJOR EL DÍA",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUESTROS ABUELOS SOLÍAN DECIR QUE LA UNIÓN HACE LA FUERZA",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUESTROS ABUELOS SOLÍAN DECIR QUE LA PACIENCIA TRAE BUENOS RESULTADOS",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUESTROS ABUELOS SOLÍAN DECIR QUE CADA ESFUERZO TIENE SU RECOMPENSA",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUESTROS ABUELOS SOLÍAN DECIR QUE ES MEJOR PREVENIR QUE LAMENTAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUESTROS ABUELOS SOLÍAN DECIR QUE LAS APARIENCIAS PUEDEN ENGAÑAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUESTROS ABUELOS SOLÍAN DECIR QUE NO TODO LO QUE BRILLA ES ORO",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUESTROS ABUELOS SOLÍAN DECIR QUE COMPARTIR ALEGRA EL CORAZÓN",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUESTROS ABUELOS SOLÍAN DECIR QUE LA EXPERIENCIA ENSEÑA A VIVIR",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUESTROS ABUELOS SOLÍAN DECIR QUE LAS BUENAS OBRAS HABLAN POR SÍ SOLAS",
+  "category": "Refranes"
+ },
+ {
+  "text": "UNA LECCIÓN DE LA VIDA ES QUE QUIEN MADRUGA APROVECHA MEJOR EL DÍA",
+  "category": "Refranes"
+ },
+ {
+  "text": "UNA LECCIÓN DE LA VIDA ES QUE LA UNIÓN HACE LA FUERZA",
+  "category": "Refranes"
+ },
+ {
+  "text": "UNA LECCIÓN DE LA VIDA ES QUE LA PACIENCIA TRAE BUENOS RESULTADOS",
+  "category": "Refranes"
+ },
+ {
+  "text": "UNA LECCIÓN DE LA VIDA ES QUE CADA ESFUERZO TIENE SU RECOMPENSA",
+  "category": "Refranes"
+ },
+ {
+  "text": "UNA LECCIÓN DE LA VIDA ES QUE ES MEJOR PREVENIR QUE LAMENTAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "UNA LECCIÓN DE LA VIDA ES QUE LAS APARIENCIAS PUEDEN ENGAÑAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "UNA LECCIÓN DE LA VIDA ES QUE NO TODO LO QUE BRILLA ES ORO",
+  "category": "Refranes"
+ },
+ {
+  "text": "UNA LECCIÓN DE LA VIDA ES QUE COMPARTIR ALEGRA EL CORAZÓN",
+  "category": "Refranes"
+ },
+ {
+  "text": "UNA LECCIÓN DE LA VIDA ES QUE LA EXPERIENCIA ENSEÑA A VIVIR",
+  "category": "Refranes"
+ },
+ {
+  "text": "UNA LECCIÓN DE LA VIDA ES QUE LAS BUENAS OBRAS HABLAN POR SÍ SOLAS",
+  "category": "Refranes"
+ },
+ {
+  "text": "ESTE DICHO NOS RECUERDA QUE QUIEN MADRUGA APROVECHA MEJOR EL DÍA",
+  "category": "Refranes"
+ },
+ {
+  "text": "ESTE DICHO NOS RECUERDA QUE LA UNIÓN HACE LA FUERZA",
+  "category": "Refranes"
+ },
+ {
+  "text": "ESTE DICHO NOS RECUERDA QUE LA PACIENCIA TRAE BUENOS RESULTADOS",
+  "category": "Refranes"
+ },
+ {
+  "text": "ESTE DICHO NOS RECUERDA QUE CADA ESFUERZO TIENE SU RECOMPENSA",
+  "category": "Refranes"
+ },
+ {
+  "text": "ESTE DICHO NOS RECUERDA QUE ES MEJOR PREVENIR QUE LAMENTAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "ESTE DICHO NOS RECUERDA QUE LAS APARIENCIAS PUEDEN ENGAÑAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "ESTE DICHO NOS RECUERDA QUE NO TODO LO QUE BRILLA ES ORO",
+  "category": "Refranes"
+ },
+ {
+  "text": "ESTE DICHO NOS RECUERDA QUE COMPARTIR ALEGRA EL CORAZÓN",
+  "category": "Refranes"
+ },
+ {
+  "text": "ESTE DICHO NOS RECUERDA QUE LA EXPERIENCIA ENSEÑA A VIVIR",
+  "category": "Refranes"
+ },
+ {
+  "text": "ESTE DICHO NOS RECUERDA QUE LAS BUENAS OBRAS HABLAN POR SÍ SOLAS",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA EXPERIENCIA DEMUESTRA QUE QUIEN MADRUGA APROVECHA MEJOR EL DÍA",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA EXPERIENCIA DEMUESTRA QUE LA UNIÓN HACE LA FUERZA",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA EXPERIENCIA DEMUESTRA QUE LA PACIENCIA TRAE BUENOS RESULTADOS",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA EXPERIENCIA DEMUESTRA QUE CADA ESFUERZO TIENE SU RECOMPENSA",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA EXPERIENCIA DEMUESTRA QUE ES MEJOR PREVENIR QUE LAMENTAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA EXPERIENCIA DEMUESTRA QUE LAS APARIENCIAS PUEDEN ENGAÑAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA EXPERIENCIA DEMUESTRA QUE NO TODO LO QUE BRILLA ES ORO",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA EXPERIENCIA DEMUESTRA QUE COMPARTIR ALEGRA EL CORAZÓN",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA EXPERIENCIA DEMUESTRA QUE LA EXPERIENCIA ENSEÑA A VIVIR",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA EXPERIENCIA DEMUESTRA QUE LAS BUENAS OBRAS HABLAN POR SÍ SOLAS",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN CONSEJO DE TODA LA VIDA DICE QUE QUIEN MADRUGA APROVECHA MEJOR EL DÍA",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN CONSEJO DE TODA LA VIDA DICE QUE LA UNIÓN HACE LA FUERZA",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN CONSEJO DE TODA LA VIDA DICE QUE LA PACIENCIA TRAE BUENOS RESULTADOS",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN CONSEJO DE TODA LA VIDA DICE QUE CADA ESFUERZO TIENE SU RECOMPENSA",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN CONSEJO DE TODA LA VIDA DICE QUE ES MEJOR PREVENIR QUE LAMENTAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN CONSEJO DE TODA LA VIDA DICE QUE LAS APARIENCIAS PUEDEN ENGAÑAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN CONSEJO DE TODA LA VIDA DICE QUE NO TODO LO QUE BRILLA ES ORO",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN CONSEJO DE TODA LA VIDA DICE QUE COMPARTIR ALEGRA EL CORAZÓN",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN CONSEJO DE TODA LA VIDA DICE QUE LA EXPERIENCIA ENSEÑA A VIVIR",
+  "category": "Refranes"
+ },
+ {
+  "text": "UN CONSEJO DE TODA LA VIDA DICE QUE LAS BUENAS OBRAS HABLAN POR SÍ SOLAS",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA GENTE SABIA SABE QUE QUIEN MADRUGA APROVECHA MEJOR EL DÍA",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA GENTE SABIA SABE QUE LA UNIÓN HACE LA FUERZA",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA GENTE SABIA SABE QUE LA PACIENCIA TRAE BUENOS RESULTADOS",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA GENTE SABIA SABE QUE CADA ESFUERZO TIENE SU RECOMPENSA",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA GENTE SABIA SABE QUE ES MEJOR PREVENIR QUE LAMENTAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA GENTE SABIA SABE QUE LAS APARIENCIAS PUEDEN ENGAÑAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA GENTE SABIA SABE QUE NO TODO LO QUE BRILLA ES ORO",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA GENTE SABIA SABE QUE COMPARTIR ALEGRA EL CORAZÓN",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA GENTE SABIA SABE QUE LA EXPERIENCIA ENSEÑA A VIVIR",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA GENTE SABIA SABE QUE LAS BUENAS OBRAS HABLAN POR SÍ SOLAS",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUNCA DEBEMOS OLVIDAR QUE QUIEN MADRUGA APROVECHA MEJOR EL DÍA",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUNCA DEBEMOS OLVIDAR QUE LA UNIÓN HACE LA FUERZA",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUNCA DEBEMOS OLVIDAR QUE LA PACIENCIA TRAE BUENOS RESULTADOS",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUNCA DEBEMOS OLVIDAR QUE CADA ESFUERZO TIENE SU RECOMPENSA",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUNCA DEBEMOS OLVIDAR QUE ES MEJOR PREVENIR QUE LAMENTAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUNCA DEBEMOS OLVIDAR QUE LAS APARIENCIAS PUEDEN ENGAÑAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUNCA DEBEMOS OLVIDAR QUE NO TODO LO QUE BRILLA ES ORO",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUNCA DEBEMOS OLVIDAR QUE COMPARTIR ALEGRA EL CORAZÓN",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUNCA DEBEMOS OLVIDAR QUE LA EXPERIENCIA ENSEÑA A VIVIR",
+  "category": "Refranes"
+ },
+ {
+  "text": "NUNCA DEBEMOS OLVIDAR QUE LAS BUENAS OBRAS HABLAN POR SÍ SOLAS",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA MORALEJA DE ESTE REFRÁN ES QUE QUIEN MADRUGA APROVECHA MEJOR EL DÍA",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA MORALEJA DE ESTE REFRÁN ES QUE LA UNIÓN HACE LA FUERZA",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA MORALEJA DE ESTE REFRÁN ES QUE LA PACIENCIA TRAE BUENOS RESULTADOS",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA MORALEJA DE ESTE REFRÁN ES QUE CADA ESFUERZO TIENE SU RECOMPENSA",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA MORALEJA DE ESTE REFRÁN ES QUE ES MEJOR PREVENIR QUE LAMENTAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA MORALEJA DE ESTE REFRÁN ES QUE LAS APARIENCIAS PUEDEN ENGAÑAR",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA MORALEJA DE ESTE REFRÁN ES QUE NO TODO LO QUE BRILLA ES ORO",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA MORALEJA DE ESTE REFRÁN ES QUE COMPARTIR ALEGRA EL CORAZÓN",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA MORALEJA DE ESTE REFRÁN ES QUE LA EXPERIENCIA ENSEÑA A VIVIR",
+  "category": "Refranes"
+ },
+ {
+  "text": "LA MORALEJA DE ESTE REFRÁN ES QUE LAS BUENAS OBRAS HABLAN POR SÍ SOLAS",
+  "category": "Refranes"
+ },
+ {
+  "text": "UNA TARDE DE PASEO POR LOS PUEBLOS BLANCOS DE ANDALUCÍA",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA TARDE DE PASEO POR LA PLAZA MAYOR DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA TARDE DE PASEO POR EL MERCADO DE LOS DOMINGOS",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA TARDE DE PASEO POR LAS CALLES DEL CASCO ANTIGUO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA TARDE DE PASEO POR EL CASTILLO SOBRE LA COLINA",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA TARDE DE PASEO POR LA ESTACIÓN DE TREN",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA TARDE DE PASEO POR EL PASEO JUNTO AL RÍO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA TARDE DE PASEO POR LA FERIA DE VERANO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA TARDE DE PASEO POR EL MIRADOR DE LA MONTAÑA",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA TARDE DE PASEO POR LA ERMITA DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VISITANTES DISFRUTAN DE LOS PUEBLOS BLANCOS DE ANDALUCÍA",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VISITANTES DISFRUTAN DE LA PLAZA MAYOR DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VISITANTES DISFRUTAN DE EL MERCADO DE LOS DOMINGOS",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VISITANTES DISFRUTAN DE LAS CALLES DEL CASCO ANTIGUO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VISITANTES DISFRUTAN DE EL CASTILLO SOBRE LA COLINA",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VISITANTES DISFRUTAN DE LA ESTACIÓN DE TREN",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VISITANTES DISFRUTAN DE EL PASEO JUNTO AL RÍO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VISITANTES DISFRUTAN DE LA FERIA DE VERANO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VISITANTES DISFRUTAN DE EL MIRADOR DE LA MONTAÑA",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VISITANTES DISFRUTAN DE LA ERMITA DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS MEJORES FOTOS SE HACEN EN LOS PUEBLOS BLANCOS DE ANDALUCÍA",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS MEJORES FOTOS SE HACEN EN LA PLAZA MAYOR DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS MEJORES FOTOS SE HACEN EN EL MERCADO DE LOS DOMINGOS",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS MEJORES FOTOS SE HACEN EN LAS CALLES DEL CASCO ANTIGUO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS MEJORES FOTOS SE HACEN EN EL CASTILLO SOBRE LA COLINA",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS MEJORES FOTOS SE HACEN EN LA ESTACIÓN DE TREN",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS MEJORES FOTOS SE HACEN EN EL PASEO JUNTO AL RÍO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS MEJORES FOTOS SE HACEN EN LA FERIA DE VERANO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS MEJORES FOTOS SE HACEN EN EL MIRADOR DE LA MONTAÑA",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS MEJORES FOTOS SE HACEN EN LA ERMITA DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS FIESTAS REÚNEN A TODOS EN LOS PUEBLOS BLANCOS DE ANDALUCÍA",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS FIESTAS REÚNEN A TODOS EN LA PLAZA MAYOR DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS FIESTAS REÚNEN A TODOS EN EL MERCADO DE LOS DOMINGOS",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS FIESTAS REÚNEN A TODOS EN LAS CALLES DEL CASCO ANTIGUO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS FIESTAS REÚNEN A TODOS EN EL CASTILLO SOBRE LA COLINA",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS FIESTAS REÚNEN A TODOS EN LA ESTACIÓN DE TREN",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS FIESTAS REÚNEN A TODOS EN EL PASEO JUNTO AL RÍO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS FIESTAS REÚNEN A TODOS EN LA FERIA DE VERANO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS FIESTAS REÚNEN A TODOS EN EL MIRADOR DE LA MONTAÑA",
+  "category": "Lugares"
+ },
+ {
+  "text": "LAS FIESTAS REÚNEN A TODOS EN LA ERMITA DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA HISTORIA ESPECIAL RODEA A LOS PUEBLOS BLANCOS DE ANDALUCÍA",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA HISTORIA ESPECIAL RODEA A LA PLAZA MAYOR DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA HISTORIA ESPECIAL RODEA A EL MERCADO DE LOS DOMINGOS",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA HISTORIA ESPECIAL RODEA A LAS CALLES DEL CASCO ANTIGUO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA HISTORIA ESPECIAL RODEA A EL CASTILLO SOBRE LA COLINA",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA HISTORIA ESPECIAL RODEA A LA ESTACIÓN DE TREN",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA HISTORIA ESPECIAL RODEA A EL PASEO JUNTO AL RÍO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA HISTORIA ESPECIAL RODEA A LA FERIA DE VERANO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA HISTORIA ESPECIAL RODEA A EL MIRADOR DE LA MONTAÑA",
+  "category": "Lugares"
+ },
+ {
+  "text": "UNA HISTORIA ESPECIAL RODEA A LA ERMITA DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "SIEMPRE HAY ALGO QUE DESCUBRIR EN LOS PUEBLOS BLANCOS DE ANDALUCÍA",
+  "category": "Lugares"
+ },
+ {
+  "text": "SIEMPRE HAY ALGO QUE DESCUBRIR EN LA PLAZA MAYOR DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "SIEMPRE HAY ALGO QUE DESCUBRIR EN EL MERCADO DE LOS DOMINGOS",
+  "category": "Lugares"
+ },
+ {
+  "text": "SIEMPRE HAY ALGO QUE DESCUBRIR EN LAS CALLES DEL CASCO ANTIGUO",
+  "category": "Lugares"
+ },
+ {
+  "text": "SIEMPRE HAY ALGO QUE DESCUBRIR EN EL CASTILLO SOBRE LA COLINA",
+  "category": "Lugares"
+ },
+ {
+  "text": "SIEMPRE HAY ALGO QUE DESCUBRIR EN LA ESTACIÓN DE TREN",
+  "category": "Lugares"
+ },
+ {
+  "text": "SIEMPRE HAY ALGO QUE DESCUBRIR EN EL PASEO JUNTO AL RÍO",
+  "category": "Lugares"
+ },
+ {
+  "text": "SIEMPRE HAY ALGO QUE DESCUBRIR EN LA FERIA DE VERANO",
+  "category": "Lugares"
+ },
+ {
+  "text": "SIEMPRE HAY ALGO QUE DESCUBRIR EN EL MIRADOR DE LA MONTAÑA",
+  "category": "Lugares"
+ },
+ {
+  "text": "SIEMPRE HAY ALGO QUE DESCUBRIR EN LA ERMITA DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VECINOS SE ENCUENTRAN EN LOS PUEBLOS BLANCOS DE ANDALUCÍA",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VECINOS SE ENCUENTRAN EN LA PLAZA MAYOR DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VECINOS SE ENCUENTRAN EN EL MERCADO DE LOS DOMINGOS",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VECINOS SE ENCUENTRAN EN LAS CALLES DEL CASCO ANTIGUO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VECINOS SE ENCUENTRAN EN EL CASTILLO SOBRE LA COLINA",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VECINOS SE ENCUENTRAN EN LA ESTACIÓN DE TREN",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VECINOS SE ENCUENTRAN EN EL PASEO JUNTO AL RÍO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VECINOS SE ENCUENTRAN EN LA FERIA DE VERANO",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VECINOS SE ENCUENTRAN EN EL MIRADOR DE LA MONTAÑA",
+  "category": "Lugares"
+ },
+ {
+  "text": "LOS VECINOS SE ENCUENTRAN EN LA ERMITA DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL ATARDECER ILUMINA LOS PUEBLOS BLANCOS DE ANDALUCÍA",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL ATARDECER ILUMINA LA PLAZA MAYOR DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL ATARDECER ILUMINA EL MERCADO DE LOS DOMINGOS",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL ATARDECER ILUMINA LAS CALLES DEL CASCO ANTIGUO",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL ATARDECER ILUMINA EL CASTILLO SOBRE LA COLINA",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL ATARDECER ILUMINA LA ESTACIÓN DE TREN",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL ATARDECER ILUMINA EL PASEO JUNTO AL RÍO",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL ATARDECER ILUMINA LA FERIA DE VERANO",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL ATARDECER ILUMINA EL MIRADOR DE LA MONTAÑA",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL ATARDECER ILUMINA LA ERMITA DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UN BUEN RECUERDO DE VIAJE ES LOS PUEBLOS BLANCOS DE ANDALUCÍA",
+  "category": "Lugares"
+ },
+ {
+  "text": "UN BUEN RECUERDO DE VIAJE ES LA PLAZA MAYOR DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UN BUEN RECUERDO DE VIAJE ES EL MERCADO DE LOS DOMINGOS",
+  "category": "Lugares"
+ },
+ {
+  "text": "UN BUEN RECUERDO DE VIAJE ES LAS CALLES DEL CASCO ANTIGUO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UN BUEN RECUERDO DE VIAJE ES EL CASTILLO SOBRE LA COLINA",
+  "category": "Lugares"
+ },
+ {
+  "text": "UN BUEN RECUERDO DE VIAJE ES LA ESTACIÓN DE TREN",
+  "category": "Lugares"
+ },
+ {
+  "text": "UN BUEN RECUERDO DE VIAJE ES EL PASEO JUNTO AL RÍO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UN BUEN RECUERDO DE VIAJE ES LA FERIA DE VERANO",
+  "category": "Lugares"
+ },
+ {
+  "text": "UN BUEN RECUERDO DE VIAJE ES EL MIRADOR DE LA MONTAÑA",
+  "category": "Lugares"
+ },
+ {
+  "text": "UN BUEN RECUERDO DE VIAJE ES LA ERMITA DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL CAMINO NOS LLEVA HASTA LOS PUEBLOS BLANCOS DE ANDALUCÍA",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL CAMINO NOS LLEVA HASTA LA PLAZA MAYOR DEL PUEBLO",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL CAMINO NOS LLEVA HASTA EL MERCADO DE LOS DOMINGOS",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL CAMINO NOS LLEVA HASTA LAS CALLES DEL CASCO ANTIGUO",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL CAMINO NOS LLEVA HASTA EL CASTILLO SOBRE LA COLINA",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL CAMINO NOS LLEVA HASTA LA ESTACIÓN DE TREN",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL CAMINO NOS LLEVA HASTA EL PASEO JUNTO AL RÍO",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL CAMINO NOS LLEVA HASTA LA FERIA DE VERANO",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL CAMINO NOS LLEVA HASTA EL MIRADOR DE LA MONTAÑA",
+  "category": "Lugares"
+ },
+ {
+  "text": "EL CAMINO NOS LLEVA HASTA LA ERMITA DEL PUEBLO",
+  "category": "Lugares"
+ }
+,
+ {"text": "FELIZ ALEGRE CONTENTO", "category": "Sinónimos fáciles"},
+ {"text": "TRISTE APENADO MELANCOLICO", "category": "Sinónimos fáciles"},
+ {"text": "RAPIDO VELOZ LIGERO", "category": "Sinónimos fáciles"},
+ {"text": "LENTO DESPACIO PAUSADO", "category": "Sinónimos fáciles"},
+ {"text": "BONITO BELLO HERMOSO", "category": "Sinónimos fáciles"},
+ {"text": "FEO HORRIBLE DESAGRADABLE", "category": "Sinónimos fáciles"},
+ {"text": "GRANDE ENORME GIGANTE", "category": "Sinónimos fáciles"},
+ {"text": "PEQUENO CHICO DIMINUTO", "category": "Sinónimos fáciles"},
+ {"text": "FACIL SENCILLO SIMPLE", "category": "Sinónimos fáciles"},
+ {"text": "DIFICIL COMPLICADO LABORIOSO", "category": "Sinónimos fáciles"},
+ {"text": "EMPEZAR COMENZAR INICIAR", "category": "Sinónimos fáciles"},
+ {"text": "TERMINAR ACABAR FINALIZAR", "category": "Sinónimos fáciles"},
+ {"text": "HABLAR CONVERSAR CHARLAR", "category": "Sinónimos fáciles"},
+ {"text": "MIRAR VER OBSERVAR", "category": "Sinónimos fáciles"},
+ {"text": "CAMINAR ANDAR PASEAR", "category": "Sinónimos fáciles"},
+ {"text": "CASA HOGAR VIVIENDA", "category": "Sinónimos fáciles"},
+ {"text": "COCHE AUTO VEHICULO", "category": "Sinónimos fáciles"},
+ {"text": "DINERO EFECTIVO CAPITAL", "category": "Sinónimos fáciles"},
+ {"text": "TRABAJO EMPLEO LABOR", "category": "Sinónimos fáciles"},
+ {"text": "AMIGO COMPANERO COLEGA", "category": "Sinónimos fáciles"},
+ {"text": "MAESTRO PROFESOR DOCENTE", "category": "Sinónimos fáciles"},
+ {"text": "MEDICO DOCTOR GALENO", "category": "Sinónimos fáciles"},
+ {"text": "NINO CHICO MUCHACHO", "category": "Sinónimos fáciles"},
+ {"text": "MUJER DAMA SENORA", "category": "Sinónimos fáciles"},
+ {"text": "COMIDA ALIMENTO VIANDA", "category": "Sinónimos fáciles"},
+ {"text": "PAN BARRA HOGAZA", "category": "Sinónimos fáciles"},
+ {"text": "AGUA LIQUIDO BEBIDA", "category": "Sinónimos fáciles"},
+ {"text": "FRIO HELADO GELIDO", "category": "Sinónimos fáciles"},
+ {"text": "CALIENTE ARDIENTE CALUROSO", "category": "Sinónimos fáciles"},
+ {"text": "FUERTE ROBUSTO RESISTENTE", "category": "Sinónimos fáciles"},
+ {"text": "DEBIL FLOJO FRAGIL", "category": "Sinónimos fáciles"},
+ {"text": "INTELIGENTE LISTO ASTUTO", "category": "Sinónimos fáciles"},
+ {"text": "VALIENTE AUDAZ ATREVIDO", "category": "Sinónimos fáciles"},
+ {"text": "MIEDOSO TEMEROSO ASUSTADIZO", "category": "Sinónimos fáciles"},
+ {"text": "CONTENTO SATISFECHO COMPLACIDO", "category": "Sinónimos fáciles"},
+ {"text": "ENFADADO MOLESTO IRRITADO", "category": "Sinónimos fáciles"},
+ {"text": "CALMADO TRANQUILO SERENO", "category": "Sinónimos fáciles"},
+ {"text": "RUIDO SONIDO ESTRUENDO", "category": "Sinónimos fáciles"},
+ {"text": "SILENCIO CALMA QUIETUD", "category": "Sinónimos fáciles"},
+ {"text": "REGALO OBSEQUIO PRESENTE", "category": "Sinónimos fáciles"},
+ {"text": "LIMPIO ASEADO HIGIENICO", "category": "Sinónimos fáciles"},
+ {"text": "SUCIO MANCHADO DESASEADO", "category": "Sinónimos fáciles"},
+ {"text": "LLENO REPLETO COLMADO", "category": "Sinónimos fáciles"},
+ {"text": "VACIO HUECO DESOCUPADO", "category": "Sinónimos fáciles"},
+ {"text": "BONITO PRECIOSO ENCANTADOR", "category": "Sinónimos fáciles"},
+ {"text": "RICO SABROSO DELICIOSO", "category": "Sinónimos fáciles"},
+ {"text": "OLER AROMAR PERFUMAR", "category": "Sinónimos fáciles"},
+ {"text": "AYUDAR ASISTIR SOCORRER", "category": "Sinónimos fáciles"},
+ {"text": "ELEGIR ESCOGER SELECCIONAR", "category": "Sinónimos fáciles"},
+ {"text": "COMPRAR ADQUIRIR OBTENER", "category": "Sinónimos fáciles"}];
+let phrases=defaultPhrases.slice();
+let finalMode=false, savedPlayersForFinal=null, finalSelecting=false, finalConsonants=0, finalVowel=0, finalVowelLimit=1, finalTimerInterval=null, finalSeconds=60;
+let answer='',category='General',hiddenLetterChallenge=false,hiddenLetter='',hiddenLetterIndex=-1,hiddenLetterSolved=false,used=new Set(),active=0,players=[{name:'Jugador 1',score:0,round:0,comodin:false,todasVocales:false},{name:'Jugador 2',score:0,round:0,comodin:false,todasVocales:false},{name:'Jugador 3',score:0,round:0,comodin:false,todasVocales:false}],currentPrize=null,canGuess=false,spinning=false,wheelAngle=0;
+function loadSaved(){try{const saved=JSON.parse(localStorage.getItem('ruleta_frases')||'null');if(Array.isArray(saved)&&saved.length){const existing=new Set(saved.map(p=>normalize(p.text)+'|'+(p.category||'General')));phrases=saved.slice();defaultPhrases.forEach(p=>{const key=normalize(p.text)+'|'+p.category;if(!existing.has(key)){phrases.push(p);existing.add(key)}})}}catch(e){}}
+function saveSaved(){localStorage.setItem('ruleta_frases',JSON.stringify(phrases));renderPhraseList()}
+function normalize(s){return s.toLocaleUpperCase('es-ES').replace(/Ñ/g,'\uE000').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\uE000/g,'Ñ').replace(/Ü/g,'U').trim()}
+function renderPuzzle(){
+ const inner=$('puzzleInner');inner.innerHTML='';
+ const text=answer.toLocaleUpperCase('es-ES');
+ const tokens=text.match(/\S+\s*/gu)||[];
+ let charOffset=0;
+ tokens.forEach(token=>{
+  const word=token.trimEnd();
+  const group=document.createElement('span');group.className='word-group';
+  [...word].forEach(ch=>{
+   const tile=document.createElement('div');tile.className='tile';
+   const isLetter=/[A-ZÁÉÍÓÚÜÑ]/.test(ch);
+   const isTarget=hiddenLetterChallenge && charOffset===hiddenLetterIndex && isLetter;
+   if(isTarget && hiddenLetterSolved){
+    tile.classList.add('hidden-target-solved');
+    tile.textContent=ch;
+    tile.style.setProperty('background','#18b86a','important');
+    tile.style.setProperty('border-color','#18b86a','important');
+    tile.style.setProperty('color','#fff','important');
+   }else if(isTarget){
+    // Antes de acertar, la casilla objetivo es idéntica a cualquier otra casilla oculta.
+    tile.classList.add('hidden');tile.textContent='';
+   }else if(!isLetter){tile.textContent=ch}
+   else if(used.has(normalize(ch))){tile.textContent=ch}
+   else{tile.classList.add('hidden');tile.textContent=''}
+   group.appendChild(tile);charOffset++;
+  });
+  if(token.length>word.length){const tile=document.createElement('div');tile.className='tile space';tile.setAttribute('aria-label','espacio');group.appendChild(tile);charOffset+=token.length-word.length}
+  inner.appendChild(group);
+ });
+ const updateTileWidth=()=>{const w=(inner.clientWidth-36)/13;inner.style.setProperty('--tile-width',Math.max(18,w)+'px')};
+ updateTileWidth();
+ $('categoryLabel').textContent=category||'GENERAL';$('roundLabel').textContent=finalMode?'🏆 FINAL: '+players[active].name:(answer?'Panel en juego':'Partida preparada');
+}
+function renderPlayers(){const wrap=$('players');wrap.innerHTML='';$('allVowelsBtn').hidden=!players[active].todasVocales;players.forEach((p,i)=>{const d=document.createElement('div');d.className='player'+(i===active?' active':'');d.innerHTML=`<input aria-label="Nombre jugador ${i+1}" value="${escapeHtml(p.name)}" maxlength="18"><div class="score">${p.score}</div><div class="status">Puntos totales</div><div class="status">${p.comodin ? "🎟️ Comodín disponible" : "Sin comodín"}<br>${p.todasVocales ? "🔤 Todas las vocales disponibles" : "Sin vocales extra"}</div><div class="player-buttons"><button class="small dark minus">−100</button><button class="small dark plus">+100</button><button class="small dark round">Ronda: ${p.round}</button></div>`;d.querySelector('input').addEventListener('change',e=>{p.name=e.target.value.trim()||`Jugador ${i+1}`;renderPlayers();updateTurn()});d.querySelector('.minus').onclick=()=>{p.score=Math.max(0,p.score-100);renderPlayers()};d.querySelector('.plus').onclick=()=>{p.score+=100;renderPlayers()};d.querySelector('.round').onclick=()=>{p.round=0;renderPlayers()};wrap.appendChild(d)});updateTurn()}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function updateTurn(){$('turnStatus').textContent='Turno: '+players[active].name;$('nextTurnBtn').textContent='Siguiente jugador ('+players[active].name+')'}
+function setMessage(s){$('message').textContent=s}
+function stopFinalTimer(){if(finalTimerInterval!==null){clearInterval(finalTimerInterval);finalTimerInterval=null}}
+function startFinalTimer(){stopFinalTimer();finalSeconds=60;$('finalTimer').style.display='block';$('finalTimer').textContent='⏱️ 60 segundos';finalTimerInterval=setInterval(()=>{finalSeconds--;if(finalSeconds<=0){stopFinalTimer();$('finalTimer').textContent='⏱️ Tiempo agotado';reveal();setMessage('¡Se acabó el tiempo! Se revela la solución: '+answer+'.');return}$('finalTimer').textContent='⏱️ '+finalSeconds+' segundos';},1000)}
+function renderLetters(){const wrap=$('letters');wrap.innerHTML='';letters.forEach(ch=>{const b=document.createElement('button');b.textContent=ch;b.className='letter'+(vowels.includes(ch)?' vowel':'')+(used.has(normalize(ch))?' used':'');b.disabled=used.has(normalize(ch))||!answer;b.onclick=()=>guess(ch);wrap.appendChild(b)})}
+function renderPhraseList(){const wrap=$('phraseList');wrap.innerHTML='';phrases.forEach((p,i)=>{const row=document.createElement('div');row.className='phrase-item';const span=document.createElement('span');span.textContent=`${p.category}: ${p.text}`;const load=document.createElement('button');load.className='small blue';load.textContent='Usar';load.onclick=()=>startPhrase(i);const del=document.createElement('button');del.className='small danger';del.textContent='×';del.title='Eliminar frase';del.onclick=()=>{if(confirm('¿Eliminar esta frase guardada?')){phrases.splice(i,1);saveSaved()}};row.append(span,load,del);wrap.appendChild(row)})}
+function startPhrase(i){const p=phrases[i];if(!p)return;hiddenLetterChallenge=false;hiddenLetterSolved=false;hiddenLetterIndex=-1;answer=p.text.toLocaleUpperCase('es-ES').trim();category=p.category||'General';used=finalMode?new Set(['L','M','F','R','O']):new Set();currentPrize=null;canGuess=false;renderPuzzle();renderLetters();$('wheelResult').textContent='¡A jugar!';setMessage('Panel nuevo. Gira la ruleta para empezar.');}
+function guess(ch){
+ if(!answer){setMessage('Primero carga una frase.');return}
+ if(hiddenLetterChallenge && !hiddenLetterSolved){
+   // Comparar letras normalizadas (manteniendo Ñ distinta de N) para que
+   // el teclado y la consonante elegida coincidan de forma fiable.
+   const guessKey=normalize(String(ch));
+   const targetKey=normalize(String(hiddenLetter));
+   if(guessKey===targetKey){
+     const winner=players[active];
+     hiddenLetterSolved=true;
+     used.add(guessKey);
+     winner.comodin=true;
+     $('wildcardBtn').hidden=false;
+     soundCorrect();
+     renderPuzzle();
+     renderLetters();
+     renderPlayers();
+     $('wildcardBtn').hidden=!winner.comodin;
+     setMessage('¡ACIERTO! La letra '+hiddenLetter+' aparece en verde. '+winner.name+' ha ganado un comodín para la final.');
+   }else{
+     // No es la consonante secreta: continuar con las reglas normales del juego.
+     // Si la letra está en la frase se revela y puntúa; si no está, se pierde el turno.
+   }
+   if(guessKey===targetKey)return;
+ }
+ if(used.has(normalize(ch)))return;
+ const isVowel=vowels.includes(ch);
+ if(finalMode && finalSelecting){
+   // En la final, elegir letras es gratis y cada letra solo puede seleccionarse una vez.
+   if(used.has(normalize(ch)))return;
+   if(isVowel){
+     if(finalVowel>=finalVowelLimit){setMessage(finalVowelLimit===2?'Ya has usado las dos vocales disponibles en la final.':'En la final solo puedes elegir una vocal, salvo que tengas un comodín.');return;}
+     if(finalVowel===1 && finalVowelLimit===2){players[active].comodin=false;$('wildcardBtn').hidden=true;}
+     finalVowel++;
+   } else {
+     if(finalConsonants>=4){setMessage('En la final solo puedes elegir cuatro consonantes.');return;}
+     finalConsonants++;
+   }
+   used.add(normalize(ch)); soundCorrect(); renderPuzzle(); renderLetters(); renderPlayers();
+   if(finalConsonants===4 && finalVowel===finalVowelLimit){finalSelecting=false;setMessage('¡Letras elegidas! Tienes 60 segundos para resolver el panel y ganar 500 puntos adicionales.');startFinalTimer();}
+   else {setMessage(`Final: elegidas ${finalConsonants}/4 consonantes y ${finalVowel}/${finalVowelLimit} vocal${finalVowelLimit===1?'':'es'}. Selección gratuita.`);}
+   return;
+ }
+ if(finalMode && !finalSelecting && (finalConsonants<4 || finalVowel<finalVowelLimit)){setMessage('Primero elige cuatro consonantes y una vocal para la final.');return;}
+ if(isVowel){if(players[active].score<700){setMessage('No tienes 700 puntos para comprar una vocal.');return}players[active].score-=700}
+ else if(!canGuess){setMessage('Primero debes girar la ruleta.');return}
+ used.add(normalize(ch));
+ const target=normalize(answer),n=[...target].filter(c=>c===normalize(ch)).length;
+ if(n){soundCorrect();if(!isVowel){const prize=typeof currentPrize==='number'?currentPrize:0;players[active].score+=prize*n;players[active].round+=prize*n}
+  setMessage(`¡Correcto! La letra ${ch} aparece ${n} ${n===1?'vez':'veces'}.${isVowel?'':' Ganas '+(currentPrize*n)+' puntos.'}`);
+  if([...target].filter(c=>/[A-ZÑ]/.test(c)).every(c=>used.has(c))){soundWin();setMessage('¡Panel completado!');}
+ }else{soundWrong();loseTurn(`La letra ${ch} no está.`);}
+ canGuess=false;currentPrize=null;renderPuzzle();renderLetters();renderPlayers();
+}
+function nextPlayer(){active=(active+1)%players.length;canGuess=false;currentPrize=null;$('wildcardBtn').hidden=true;renderPlayers()}
+function loseTurn(message){
+ canGuess=false;currentPrize=null;
+ if(players[active].comodin){setMessage(message+' Puedes gastar tu comodín para seguir jugando.');$('wildcardBtn').hidden=false;}
+ else{setMessage(message+' Juega el siguiente concursante.');nextPlayer();}
+}
+function drawWheel(){
+ const canvas=$('wheel'),ctx=canvas.getContext('2d'),cx=210,cy=210,r=190;ctx.clearRect(0,0,420,420);
+ const arc=2*Math.PI/segments.length;
+ segments.forEach((val,i)=>{const a=wheelAngle+i*arc-Math.PI/2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,a,a+arc);ctx.closePath();ctx.fillStyle=typeof val==='number'?colors[i%colors.length]:(val==='BANCARROTA'?'#252b36':val==='PIERDE TURNO'?'#d83939':val==='PREMIO'?'#0b9b73':'#6c43b5');ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=2;ctx.stroke();ctx.save();ctx.translate(cx,cy);ctx.rotate(a+arc/2);ctx.textAlign='right';ctx.fillStyle='#fff';ctx.font=typeof val==='number'?'bold 19px Arial':(val==='PASAS A 0 PERO CONTINUAS'?'bold 7px Arial':val==='COMODIN'?'bold 12px Arial':val==='TODAS LAS VOCALES'?'bold 9px Arial':'bold 11px Arial');ctx.shadowColor='#000';ctx.shadowBlur=2;ctx.fillText(String(val),r-12,5);ctx.restore()});
+ ctx.beginPath();ctx.arc(cx,cy,38,0,2*Math.PI);ctx.fillStyle='#102541';ctx.fill();ctx.strokeStyle='#fff';ctx.lineWidth=3;ctx.stroke();ctx.fillStyle='#ffd34d';ctx.font='bold 15px Arial';ctx.textAlign='center';ctx.fillText('SUERTE',cx,cy+5);
+ ctx.beginPath();ctx.moveTo(cx-13,7);ctx.lineTo(cx+13,7);ctx.lineTo(cx,35);ctx.closePath();ctx.fillStyle='#fff';ctx.fill();ctx.strokeStyle='#071426';ctx.stroke();
+}
+function startHiddenWordChallenge(){
+ if(!phrases.length){setMessage('No hay frases guardadas para jugar a LETRA OCULTA.');return}
+ // Elegir solo consonantes que aparezcan exactamente una vez. La Ñ se cuenta
+ // como letra distinta de la N (normalize() normal no sirve para este recuento).
+ const eligible=phrases.map(p=>{
+  const text=p.text.toLocaleUpperCase('es-ES').trim();
+  const chars=[...text];
+  const counts={};
+  chars.forEach(ch=>{if(/[BCDFGHJKLMNÑPQRSTVWXYZ]/.test(ch))counts[ch]=(counts[ch]||0)+1});
+  const unique=chars.map((ch,i)=>({ch,i})).filter(x=>/[BCDFGHJKLMNÑPQRSTVWXYZ]/.test(x.ch)&&counts[x.ch]===1);
+  return {text,unique};
+ }).filter(x=>x.unique.length>0);
+ if(!eligible.length){setMessage('No hay ninguna frase guardada con una consonante que aparezca una sola vez. Añade otra frase para jugar a LETRA OCULTA.');return}
+ const chosen=eligible[Math.floor(Math.random()*eligible.length)];
+ answer=chosen.text;category='LETRA OCULTA';used=new Set();currentPrize=null;canGuess=false;hiddenLetterChallenge=true;hiddenLetterSolved=false;
+ const target=chosen.unique[Math.floor(Math.random()*chosen.unique.length)];
+ hiddenLetter=target.ch;hiddenLetterIndex=[...answer].findIndex((ch,i)=>i===target.i && ch===target.ch);
+ renderPuzzle();renderLetters();$('wheelResult').textContent='LETRA OCULTA';
+ setMessage('Adivina la consonante que aparece una sola vez en la frase para ganar un comodín para la final.');
+}
+$('hiddenLetterBtn').onclick=startHiddenWordChallenge;
+function spin(){if(spinning||!answer){setMessage('Carga una frase antes de girar.');return}spinning=true;$('spinBtn').disabled=true;soundSpin();const start=wheelAngle,extra=(Math.PI*2)*(5+Math.random()*4)+Math.random()*Math.PI*2;const dur=3000,begin=performance.now();function frame(now){const t=Math.min(1,(now-begin)/dur),ease=1-Math.pow(1-t,4);wheelAngle=start+extra*ease;drawWheel();if(t<1){requestAnimationFrame(frame)}else{spinning=false;$('spinBtn').disabled=false;const arc=2*Math.PI/segments.length;const normalized=((Math.PI*2-(wheelAngle%(Math.PI*2)))%(Math.PI*2));const idx=Math.floor(normalized/arc)%segments.length;const val=segments[idx];soundWheelStop();currentPrize=val;canGuess=typeof val==='number';$('wheelResult').textContent=String(val);if(val==='BANCARROTA'){soundWrong();players[active].score=Math.max(0,players[active].score-players[active].round);players[active].round=0;setMessage('¡PASAS A CERO! Pierdes los puntos acumulados en esta ronda.');nextPlayer()}else if(val==='PASAS A 0 PERO CONTINUAS'){soundWrong();players[active].score=0;players[active].round=0;canGuess=false;currentPrize=null;setMessage('¡PASAS A CERO, PERO CONTINÚAS JUGANDO!');}else if(val==='TODAS LAS VOCALES'){players[active].todasVocales=true;soundCorrect();canGuess=false;currentPrize=null;setMessage('¡TODAS LAS VOCALES guardadas! Puedes usarlas cuando quieras durante tu turno.');}else if(val==='PIERDE TURNO'){soundWrong();loseTurn('¡PIERDES TURNO!');}else if(val==='COMODIN'){players[active].comodin=true;setMessage('¡COMODÍN! '+players[active].name+' podrá usarlo para seguir jugando si pierde el turno.');canGuess=false;currentPrize=null}else if(val==='PREMIO'){const bonus=1+Math.floor(Math.random()*300);players[active].score+=bonus;players[active].round+=bonus;setMessage('¡PREMIO! Añades '+bonus+' puntos y puedes seguir jugando.');canGuess=false;currentPrize=null}else if(val==='ME LO QUEDO'){const bonus=1+Math.floor(Math.random()*300);players[active].score+=bonus;players[active].round+=bonus;currentPrize=300;canGuess=true;setMessage('¡ME LO QUEDO! Ganas '+bonus+' puntos extra y puedes probar una consonante.')}else{setMessage(`La ruleta marca ${val} puntos. Elige una consonante.`)}renderPlayers();}}requestAnimationFrame(frame)}
+function resetLetters(){used=finalMode?new Set(['L','M','F','R','O']):new Set();renderPuzzle();renderLetters();setMessage('Letras reiniciadas. La frase sigue siendo la misma.')}
+function reveal(){if(!answer)return;used=new Set([...normalize(answer)].filter(c=>/[A-ZÑ]/.test(c)));renderPuzzle();renderLetters();setMessage('Solución revelada.')}
+$('spinBtn').onclick=spin;$('buyVowelBtn').onclick=()=>{if(!answer){setMessage('Carga una frase primero.');return}const avail=letters.filter(ch=>vowels.includes(ch)&&!used.has(normalize(ch)));if(!avail.length){setMessage('Ya se han usado todas las vocales.');return}const ch=prompt('Escribe la vocal que quieres comprar: A, E, I, O o U');if(ch&&vowels.includes(ch.trim().toLocaleUpperCase('es-ES')))guess(ch.trim().toLocaleUpperCase('es-ES'))};
+$('wildcardBtn').onclick=()=>{if(players[active].comodin){players[active].comodin=false;$('wildcardBtn').hidden=true;canGuess=false;currentPrize=null;setMessage('¡Comodín utilizado! '+players[active].name+' sigue jugando.');renderPlayers()}};
+$('allVowelsBtn').onclick=()=>{const p=players[active];if(!p.todasVocales||!answer)return;p.todasVocales=false;[...'AEIOU'].forEach(ch=>{if([...normalize(answer)].includes(ch))used.add(ch)});canGuess=false;currentPrize=null;renderPuzzle();renderLetters();renderPlayers();$('allVowelsBtn').hidden=true;setMessage('¡Todas las vocales utilizadas! Se han revelado las vocales de la frase. Continúas jugando.')};
+$('passBtn').onclick=()=>{setMessage('Turno pasado.');nextPlayer()};$('nextTurnBtn').onclick=()=>{nextPlayer();setMessage('Nuevo turno: '+players[active].name)};
+$('revealBtn').onclick=()=>{stopFinalTimer();$('finalTimer').style.display='none';reveal()};$('resetLettersBtn').onclick=resetLetters;
+$('solveBtn').onclick=()=>{if(!answer){setMessage('Carga una frase primero.');return}$('solveInput').value='';$('solveDialog').showModal();$('solveInput').focus()};
+$('cancelSolveBtn').onclick=()=>$('solveDialog').close();
+$('confirmSolveBtn').onclick=()=>{const guessText=$('solveInput').value;$('solveDialog').close();if(finalMode && (finalSelecting || finalConsonants!==4 || finalVowel!==finalVowelLimit)){setMessage('Antes de resolver, elige cuatro consonantes y una vocal.');return}if(normalize(guessText)===normalize(answer)){stopFinalTimer();$('finalTimer').style.display='none';soundWin();if(finalMode){players[active].score+=500;players[active].round+=500;reveal();setMessage('¡Final resuelta! '+players[active].name+' gana 500 puntos adicionales.');}else{players[active].score+=Math.max(0,players[active].round);reveal();setMessage('¡Correcto, panel resuelto por '+players[active].name+'!');}renderPlayers()}else{soundWrong();if(finalMode){setMessage('No es correcto. Puedes volver a intentarlo.');}else{setMessage('No es correcto. El turno pasa al siguiente jugador.');nextPlayer()}}};
+$('togglePhrasesBtn').onclick=()=>{const list=$('phraseList'),show=list.classList.contains('concealed');list.classList.toggle('concealed',!show);$('togglePhrasesBtn').textContent=show?'🙈 Ocultar frases guardadas':'👁 Ver frases guardadas';$('togglePhrasesBtn').setAttribute('aria-expanded',String(show))};
+$('savePhraseBtn').onclick=()=>{const text=$('phraseText').value.trim(),cat=$('phraseCategory').value.trim()||'General';if(!text){alert('Escribe una frase primero.');return}phrases.push({text:text.toLocaleUpperCase('es-ES'),category:cat});saveSaved();$('phraseText').value='';setMessage('Frase guardada.')};
+$('loadRandomBtn').onclick=loadRandomPhrase;
+$('loadRandomBtnTurn').onclick=loadRandomPhrase;
+function loadRandomPhrase(){if(!phrases.length){alert('No hay frases guardadas.');return}let i=Math.floor(Math.random()*phrases.length);startPhrase(i)}
+$('finalBtn').onclick=()=>{
+  if(finalMode){
+    stopFinalTimer();$('finalTimer').style.display='none';
+    if(savedPlayersForFinal){players=savedPlayersForFinal; savedPlayersForFinal=null;}
+    finalMode=false; finalSelecting=false; finalConsonants=0; finalVowel=0; active=Math.min(active,players.length-1);
+    $('finalBtn').textContent='🏆 Ir a la final';
+    $('roundLabel').textContent=finalMode?('🏆 FINAL: '+players[0].name):(answer?'Panel en juego':'Partida preparada');
+    setMessage('Has vuelto a la partida con todos los jugadores.'); renderPlayers(); return;
+  }
+  if(!players.length){setMessage('No hay jugadores para la final.');return;}
+  stopFinalTimer();$('finalTimer').style.display='none';
+  const winner=players.reduce((best,p)=>p.score>best.score?p:best,players[0]);
+  savedPlayersForFinal=players.map(p=>({...p}));
+  players=[{...winner}]; active=0; finalMode=true;
+  $('finalBtn').textContent='↩ Volver a la partida';
+  $('roundLabel').textContent='🏆 FINAL: '+winner.name;
+  canGuess=false; currentPrize=null; $('wildcardBtn').hidden=!players[0].comodin; finalSelecting=true; finalConsonants=0; finalVowel=0; finalVowelLimit=players[0].comodin?2:1;
+  // En la final se descubren automáticamente las letras L, M, F, R y la vocal O.
+  // Cargar un panel nuevo para la final y descubrir las letras iniciales.
+  const finalPhrases=phrases.map((p,i)=>({p,i})).filter(x=>normalize(x.p.category||'')===normalize('Sinónimos fáciles'));
+  if(finalPhrases.length){const chosen=finalPhrases[Math.floor(Math.random()*finalPhrases.length)];startPhrase(chosen.i);}
+  else if(phrases.length){startPhrase(Math.floor(Math.random()*phrases.length));}
+  else {used=new Set(['L','M','F','R','O']);renderPuzzle();renderLetters();}
+  setMessage('¡Final! Juega únicamente '+winner.name+'. Panel de sinónimos fáciles (3 palabras). Letras iniciales: L, M, F, R y O. Elige cuatro consonantes y '+(players[0].comodin?'una vocal o dos usando tu comodín.':'una vocal.'));
+  renderPlayers();
+};
+$('newGameBtn').onclick=()=>{stopFinalTimer();$('finalTimer').style.display='none';finalMode=false;finalSelecting=false;finalConsonants=0;finalVowel=0;savedPlayersForFinal=null;$('finalBtn').textContent='🏆 Ir a la final';if(!phrases.length){alert('Guarda una frase primero.');return}startPhrase(Math.floor(Math.random()*phrases.length));active=0;players.forEach(p=>{p.score=0;p.round=0;p.comodin=false;p.todasVocales=false});$('wildcardBtn').hidden=true;renderPlayers()};
+$('fullscreenBtn').onclick=async()=>{try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen();else await document.exitFullscreen()}catch(e){alert('No se ha podido activar la pantalla completa. Prueba con F11.')}};
+$('boardModeBtn').onclick=()=>{document.body.classList.toggle('board-only');$('boardModeBtn').textContent=document.body.classList.contains('board-only')?'🛠 Mostrar controles':'📺 Ver solo tablero'};
+$('helpBtn').onclick=()=>$('helpDialog').showModal();$('closeHelpBtn').onclick=()=>$('helpDialog').close();
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&document.body.classList.contains('board-only')){document.body.classList.remove('board-only');$('boardModeBtn').textContent='📺 Ver solo tablero'}});
+loadSaved();renderPuzzle();renderPlayers();renderLetters();renderPhraseList();drawWheel();
+</script>
+</body>
+</html>
